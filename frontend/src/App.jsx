@@ -1,10 +1,13 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import './App.css'
 import './Style.css'
+import Vite from './assets/vite.svg'
 
 const Info = ({setIsLogin, setIsSignUp, setIsEmail, setIsUser}) => {
   const [isEdit, setIsEdit] = useState(true)
-  const [user, setUser] = useState({ email: '', name: '' })
+  const [user, setUser] = useState({ email: '', name: '', img: null })
+  const [image, setImage] = useState(null);
+  const fileRef = useRef(null);
   const closeEvent = () => {
     setIsLogin(false)
     setIsSignUp(false)
@@ -12,10 +15,25 @@ const Info = ({setIsLogin, setIsSignUp, setIsEmail, setIsUser}) => {
     setIsUser(false)
   }
   const btn1Event = () => {
-    setIsEdit(false)
+    setIsEdit(!isEdit)
   }
   const btn2Event = () => {
     alert("탈퇴 요청")
+  }
+  const imageEvent = () => {
+    if(!isEdit) fileRef.current.click()
+  }
+  const imageChange = () => {
+    const file = fileRef.current.files[0];
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setImage(reader.result)
+    };
+    reader.readAsDataURL(file);
+  }
+  const getFile = (fileNo) => {
+    if(fileNo == null) return Vite
+    return baseUrl + fileNo
   }
   const changeEvent = (e) => {
     const {name, value} = e.target;
@@ -24,9 +42,11 @@ const Info = ({setIsLogin, setIsSignUp, setIsEmail, setIsUser}) => {
   useEffect(() => {
     const temp = {
       email: "hong@example.com",
-      name: "홍길동"
+      name: "홍길동",
+      img: null
     }
     setUser(temp)
+    setImage(getFile(temp.img))
   }, [])
   return (
     <>
@@ -34,9 +54,9 @@ const Info = ({setIsLogin, setIsSignUp, setIsEmail, setIsUser}) => {
       <section className="card modal">
 
         <div className="brand">
-          <img src="vite.svg"
-              alt="유저 아이콘"
+          <img src={image} alt="유저 아이콘" onClick={imageEvent}
               style={{width:'60px', height: '60px', borderRadius: '50%', objectFit: 'cover', boxShadow: '0 4px 10px rgba(0,0,0,.4)'}} />
+          <input type="file" style={{display: 'none'}} accept="image/*" ref={fileRef} onChange={imageChange}/>
           <div>
             <h1 className="brand__name">유저 정보</h1>
             <p className="subtitle">계정 관리</p>
@@ -56,7 +76,7 @@ const Info = ({setIsLogin, setIsSignUp, setIsEmail, setIsUser}) => {
         </form>
 
         <div className="row">
-          <button type='button' className="btn" onClick={btn1Event}>회원정보 수정</button>
+          <button type='button' className="btn" onClick={btn1Event}>회원정보 {isEdit ? '수정' : '저장'}</button>
           <button type='button' className="btn" onClick={btn2Event}
             style={{background: 'var(--danger)', borderColor: 'var(--danger)', boxShadow: '0 10px 22px rgba(255,90,122,.28)'}}>
             회원탈퇴
@@ -69,6 +89,7 @@ const Info = ({setIsLogin, setIsSignUp, setIsEmail, setIsUser}) => {
 }
 
 const Login = ({setIsLogin, setIsSignUp, setIsEmail, setIsUser}) => {
+  const emailRef = useRef(null)
   const modalEvent = () => {
     setIsLogin(false)
     setIsSignUp(true)
@@ -81,12 +102,19 @@ const Login = ({setIsLogin, setIsSignUp, setIsEmail, setIsUser}) => {
     setIsEmail(false)
     setIsUser(false)
   }
-  const submitEvent = (e) => {
-    e.preventDefault();
-    setIsLogin(false)
-    setIsSignUp(false)
-    setIsEmail(true)
-    setIsUser(false)
+  const submitEvent = () => {
+    if(isValidEmail(emailRef.current.value)) {
+      setIsLogin(false)
+      setIsSignUp(false)
+      setIsEmail(true)
+      setIsUser(false)
+    } else {
+      alert("이메일 형식으로 넣어 주실까요?")
+    }    
+  }
+  const isValidEmail = (email) => {
+    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return regex.test(email);
   }
   return (
     <>
@@ -100,12 +128,12 @@ const Login = ({setIsLogin, setIsSignUp, setIsEmail, setIsUser}) => {
           </div>
         </div>
 
-        <form onSubmit={submitEvent}>
+        <form>
           <div className="field">
             <label htmlFor="email">이메일</label>
-            <input type="email" id="email" name="email" className="input" placeholder="id@example.com" required />
+            <input type="email" id="email" name="email" className="input" ref={emailRef} placeholder="id@example.com" required />
           </div>
-          <button className="btn" type="submit">이메일 인증</button>
+          <button className="btn" type="button" onClick={submitEvent}>이메일 인증</button>
           <p className="footer">계정이 없으신가요? <span style={{color: 'red', cursor: 'pointer'}} onClick={modalEvent}>회원가입</span></p>
         </form>
       </section>
@@ -116,6 +144,7 @@ const Login = ({setIsLogin, setIsSignUp, setIsEmail, setIsUser}) => {
 const SignUp = ({setIsLogin, setIsSignUp, setIsEmail, setIsUser}) => {
   const [email, setEmail] = useState(false);
   const [isButton, setIsButton] = useState(true);
+  const emailRef = useRef(null)
   const modalEvent = () => {
     setIsLogin(true)
     setIsSignUp(false)
@@ -128,9 +157,17 @@ const SignUp = ({setIsLogin, setIsSignUp, setIsEmail, setIsUser}) => {
     setIsEmail(false)
     setIsUser(false)
   }
+  const isValidEmail = (email) => {
+    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return regex.test(email);
+  }
   const checkEmail = () => {
-    setIsButton(false)
-    setEmail(true)
+    if(isValidEmail(emailRef.current.value)) {
+      setIsButton(false)
+      setEmail(true)
+    } else {
+      alert("이메일 형식으로 넣어 주실까요?")
+    }
   }
   const submitEvent = (e) => {
     e.preventDefault();
@@ -151,17 +188,17 @@ const SignUp = ({setIsLogin, setIsSignUp, setIsEmail, setIsUser}) => {
           </div>
         </div>
 
-        <form onClick={submitEvent} >
+        <form onSubmit={submitEvent} >
           <div className="field">
             <label htmlFor="email">이메일</label>
-            <input type="email" id="email" name="email" className="input" placeholder="id@example.com" required readOnly={email} />
+            <input type="email" id="email" name="email" className="input" placeholder="id@example.com" ref={emailRef} required readOnly={email} />
             {isButton && <button className="btn" type="button" onClick={checkEmail}>중복확인</button>}
           </div>
 
           {email &&
           <div className="field">
             <label htmlFor="name">사용자 이름</label>
-            <input type="text" id="name" name="name" className="input" placeholder="홍길동" minlength="2" required />
+            <input type="text" id="name" name="name" className="input" placeholder="홍길동" minLength="2" required />
             <button className="btn" type="submit">회원가입</button>
           </div>
           }
@@ -204,8 +241,8 @@ const Email = ({setIsLogin, setIsSignUp, setIsEmail, setIsUser}) => {
 
         <form onSubmit={submitEvent}>
           <div className="field">
-            <label for="code">인증 코드</label>
-            <input type="text" id="code" name="code" className="input" placeholder="6자리 숫자" maxlength="6" required />
+            <label htmlFor="code">인증 코드</label>
+            <input type="text" id="code" name="code" className="input" placeholder="6자리 숫자" maxLength="6" required />
             <p className="hint">인증 코드는 3분간 유효합니다.</p>
           </div>
 
