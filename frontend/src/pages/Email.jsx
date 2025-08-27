@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useRoot } from '@hooks/RootProvider.jsx'
+import axios from 'axios'
 
 const Email = () => {
   const { closeEvent } = useRoot()
@@ -9,7 +10,16 @@ const Email = () => {
   const submitEvent = (e) => {
     e.preventDefault();
     // 백엔드 처리 부분
-    location.reload()
+    console.log(e.target.code.value)
+    axios.post("http://localhost:8000/code", {code : e.target.code.value})
+      .then(res => {
+        if(res.data.status) {
+          location.reload()
+        }else {
+          alert("입력하신 코드는 만료가 되었거나 잘못된 코드 입니다.")
+        }
+      })
+      .catch(err => console.error(err));
   }
   return (
     <>
