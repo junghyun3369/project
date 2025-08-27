@@ -1,25 +1,25 @@
 import { useState, useEffect, useRef } from 'react'
 import { useRoot } from '@hooks/RootProvider.jsx'
-import axios from 'axios'
+import { POST } from '@utils/Network.js'
+import { setStorage } from '@utils/Common.js'
 
 const Email = () => {
-  const { closeEvent } = useRoot()
+  const { closeEvent, setStorage } = useRoot()
   const codeEvent = () => {
     // 백엔드 처리 부분
   }
   const submitEvent = (e) => {
     e.preventDefault();
-    // 백엔드 처리 부분
-    console.log(e.target.code.value)
-    axios.post("http://localhost:8000/code", {code : e.target.code.value})
-      .then(res => {
-        if(res.data.status) {
+    POST("/oauth/user", {code : e.target.code.value})
+    .then(res => {
+      if(res.status) {
+        if(setStorage("access", res.result)) {
           location.reload()
-        }else {
-          alert("입력하신 코드는 만료가 되었거나 잘못된 코드 입니다.")
         }
-      })
-      .catch(err => console.error(err));
+      }else {
+        alert(res.message);
+      }
+    });
   }
   return (
     <>
@@ -38,7 +38,7 @@ const Email = () => {
         <form onSubmit={submitEvent}>
           <div className="field">
             <label htmlFor="code">인증 코드</label>
-            <input type="text" id="code" name="code" className="input" placeholder="6자리 숫자" maxLength="6" required />
+            <input type="text" id="code" name="code" className="input" placeholder="6자리 숫자" maxLength="26" required />
             <p className="hint">인증 코드는 3분간 유효합니다.</p>
           </div>
 

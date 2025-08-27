@@ -1,18 +1,42 @@
 import { useState, useEffect, useRef } from 'react'
 import { useRoot } from '@hooks/RootProvider.jsx'
 import Vite from '@assets/vite.svg'
+import { GET, DELETE, FileUpload } from '@utils/Network.js'
 
 const Info = () => {
-  const { closeEvent } = useRoot()
+  const { closeEvent, setStorage, getStorage, removeStorage, isStorage } = useRoot()
   const [isEdit, setIsEdit] = useState(true)
-  const [user, setUser] = useState({ email: '', name: '', img: null })
+  const [user, setUser] = useState({ email: '', name: '' })
   const [image, setImage] = useState(null);
   const fileRef = useRef(null);
+  const baseUrl = import.meta.env.VITE_APP_GATEWAY_URL || 'http://localhost:7000';
   const btn1Event = () => {
+    if(!isEdit) {
+      console.log(user, fileRef.current.files)
+
+      const formData = new FormData();
+      if(fileRef.current.files.length > 0) {
+        formData.append("file", fileRef.current.files[0]);
+      }
+      formData.append("name", user.name);
+
+      FileUpload(`/oauth/user/${user.no}`, formData)
+      .then(res => {
+        console.log(res)
+      })
+    }
     setIsEdit(!isEdit)
+    
   }
   const btn2Event = () => {
-    alert("탈퇴 요청")
+    DELETE(`/oauth/user/${user.no}`, {})
+    .then(res => {
+      if(res.status) {
+        removeStorage("access")
+      } else {
+        alert(res.message)
+      }
+    });
   }
   const imageEvent = () => {
     if(!isEdit) fileRef.current.click()
@@ -27,20 +51,27 @@ const Info = () => {
   }
   const getFile = (fileNo) => {
     if(fileNo == null) return Vite
-    return baseUrl + fileNo
+    return baseUrl + "/oauth/file/u/" + fileNo
   }
   const changeEvent = (e) => {
     const {name, value} = e.target;
     setUser({...user, [name]:value})
   }
   useEffect(() => {
-    const temp = {
-      email: "hong@example.com",
-      name: "홍길동",
-      img: null
+    if(isStorage("access")) {
+      GET("/oauth/user")
+      .then(res => {
+        if(res.status) {
+          console.log(res.result)
+          setUser(res.result)
+          setImage(getFile(res.result.fileNo))
+        } else {
+          closeEvent()
+        }
+      });
+    } else {
+      location.reload();
     }
-    setUser(temp)
-    setImage(getFile(temp.img))
   }, [])
   return (
     <>
@@ -57,10 +88,10 @@ const Info = () => {
           </div>
         </div>
 
-        <form action="login.html" >
+        <form >
           <div className="field">
             <label htmlFor="email">이메일</label>
-            <input type="email" id="email" name="email" className="input" placeholder="id@example.com" value={user?.email} onChange={changeEvent} readOnly={isEdit} />
+            <input type="email" id="email" name="email" className="input" placeholder="id@example.com" value={user?.email} onChange={changeEvent} readOnly />
           </div>
 
           <div className="field">
@@ -71,7 +102,7 @@ const Info = () => {
 
         <div className="row">
           <button type='button' className="btn" onClick={btn1Event}>회원정보 {isEdit ? '수정' : '저장'}</button>
-          <button type='button' className="btn" onClick={btn2Event}
+          <button type='button' className="btn" onClick={btn2Event} disabled={isEdit}
             style={{background: 'var(--danger)', borderColor: 'var(--danger)', boxShadow: '0 10px 22px rgba(255,90,122,.28)'}}>
             회원탈퇴
           </button>

@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useRoot } from '@hooks/RootProvider.jsx'
+import { POST, PUT } from '@utils/Network.js'
 
 const SignUp = () => {
   const { modalEvent, closeEvent, isValidEmail } = useRoot()
@@ -9,15 +10,30 @@ const SignUp = () => {
   
   const checkEmail = () => {
     if(isValidEmail(emailRef.current.value)) {
-      setIsButton(false)
-      setEmail(true)
+      POST("/oauth/user/email", {email : emailRef.current.value, type : 1})
+      .then(res => {
+        if(res.status) {
+          setIsButton(false)
+          setEmail(true)
+        } else {
+          alert(res.message)
+          modalEvent("Login")
+        }
+      });
     } else {
       alert("이메일 형식으로 넣어 주실까요?")
     }
   }
   const submitEvent = (e) => {
     e.preventDefault();
-    modalEvent("Login")
+    PUT("/oauth/user", {service: 1, email: emailRef.current.value, name: e.target.name.value, type: 1})
+    .then(res => {
+      if(res.status) {
+        modalEvent("Login")
+      } else {
+        alert(res.message)
+      }
+    });
   }
   return (
     <>

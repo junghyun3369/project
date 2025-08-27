@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from "react"
 import { useCookies } from 'react-cookie';
+import { decode, encode } from '@utils/Common.js'
 
 export const RootContext = createContext()
 
@@ -38,12 +39,30 @@ const RootProvider = ({children}) => {
     return regex.test(email);
   }
 
+  const setStorage = (name, token) => {
+    setCookie(name, encode(token));
+    return true;
+  }
+  
+  const getStorage = (name) => {
+    return cookies[name] == undefined ? null : decode(cookies[name]);
+  }
+  
+  const isStorage = (name) => {
+    return getStorage(name) === null ? false : true;
+  }
+  
+  const removeStorage = (name) => {
+    removeCookie(name);
+    location.reload();
+  }
+
   useEffect(() => {
-    console.log(cookies)
+    
   }, [])
 
   return (
-    <RootContext.Provider value={{ isUser, isLogin, isSignUp, isEmail, modalEvent, closeEvent, isValidEmail }}>
+    <RootContext.Provider value={{ isUser, isLogin, isSignUp, isEmail, modalEvent, closeEvent, isValidEmail, setStorage, getStorage, removeStorage, isStorage }}>
       {children}
     </RootContext.Provider>
   )

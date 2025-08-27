@@ -1,22 +1,20 @@
 import { useState, useEffect, useRef } from 'react'
 import { useRoot } from '@hooks/RootProvider.jsx'
-import axios from 'axios'
+import { POST } from '@utils/Network.js'
 
 const Login = () => {
   const { modalEvent, closeEvent, isValidEmail } = useRoot()
   const emailRef = useRef(null)
   const submitEvent = () => {
     if(isValidEmail(emailRef.current.value)) {
-      axios.post("http://localhost:8000/user", {email : emailRef.current.value})
+      POST("/oauth/user/email", {email : emailRef.current.value, type : 2})
       .then(res => {
-        if(res.data.status) {
-          console.log(res.data.code)
+        if(res.status) {
           modalEvent("Email")
         } else {
-          alert("코드를 받지 않았습니다.")
+          alert(res.message)
         }
-      })
-      .catch(err => console.error(err));
+      });
     } else {
       alert("이메일 형식으로 넣어 주실까요?")
     }    
