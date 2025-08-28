@@ -1,7 +1,5 @@
-import { useState, useEffect, useRef } from 'react'
 import { useRoot } from '@hooks/RootProvider.jsx'
 import { POST } from '@utils/Network.js'
-import { setStorage } from '@utils/Common.js'
 
 const Email = () => {
   const { closeEvent, setStorage } = useRoot()

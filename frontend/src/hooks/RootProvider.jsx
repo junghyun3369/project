@@ -1,6 +1,8 @@
 import { createContext, useContext, useState, useEffect } from "react"
 import { useCookies } from 'react-cookie';
 import { decode, encode } from '@utils/Common.js'
+import Vite from '@assets/vite.svg'
+import { jwtDecode } from 'jwt-decode';
 
 export const RootContext = createContext()
 
@@ -9,6 +11,8 @@ const RootProvider = ({children}) => {
   const [isLogin, setIsLogin] = useState(false)
   const [isSignUp, setIsSignUp] = useState(false)
   const [isEmail, setIsEmail] = useState(false)
+  const [access, setAccess] = useState(false)
+  const [isFreeView, setIsFreeView] = useState(false)
   const [cookies, setCookie, removeCookie] = useCookies(['ck']);
 
   const modalEvent = (target) => {
@@ -57,12 +61,27 @@ const RootProvider = ({children}) => {
     location.reload();
   }
 
+  const baseUrl = import.meta.env.VITE_APP_GATEWAY_URL || 'http://localhost:7000';
+  const getFile = (fileNo) => {
+    if(fileNo == null) return Vite
+    return baseUrl + "/oauth/file/u/" + fileNo
+  }
+
+  const getUserNo = () => {
+    if(isStorage("access")) {
+      const decoded = jwtDecode(getStorage("access"));
+      return decoded.userNo;
+    } else {
+      return 0;
+    }
+  }
+
   useEffect(() => {
-    
+    if(isStorage("access")) setAccess(true)
   }, [])
 
   return (
-    <RootContext.Provider value={{ isUser, isLogin, isSignUp, isEmail, modalEvent, closeEvent, isValidEmail, setStorage, getStorage, removeStorage, isStorage }}>
+    <RootContext.Provider value={{ access, setAccess, isUser, isLogin, isSignUp, isEmail, modalEvent, closeEvent, isValidEmail, setStorage, getStorage, removeStorage, isStorage, getFile, getUserNo, isFreeView, setIsFreeView }}>
       {children}
     </RootContext.Provider>
   )

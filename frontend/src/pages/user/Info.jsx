@@ -1,32 +1,31 @@
 import { useState, useEffect, useRef } from 'react'
 import { useRoot } from '@hooks/RootProvider.jsx'
-import Vite from '@assets/vite.svg'
 import { GET, DELETE, FileUpload } from '@utils/Network.js'
 
 const Info = () => {
-  const { closeEvent, setStorage, getStorage, removeStorage, isStorage } = useRoot()
+  const { closeEvent, removeStorage, isStorage, getFile } = useRoot()
   const [isEdit, setIsEdit] = useState(true)
   const [user, setUser] = useState({ email: '', name: '' })
   const [image, setImage] = useState(null);
   const fileRef = useRef(null);
-  const baseUrl = import.meta.env.VITE_APP_GATEWAY_URL || 'http://localhost:7000';
   const btn1Event = () => {
     if(!isEdit) {
-      console.log(user, fileRef.current.files)
-
       const formData = new FormData();
       if(fileRef.current.files.length > 0) {
         formData.append("file", fileRef.current.files[0]);
       }
       formData.append("name", user.name);
-
       FileUpload(`/oauth/user/${user.no}`, formData)
       .then(res => {
-        console.log(res)
+        if(res.status) {
+          setIsEdit(!isEdit)
+        } else {
+          alert(res.message)
+        }
       })
+    } else {
+      setIsEdit(!isEdit)
     }
-    setIsEdit(!isEdit)
-    
   }
   const btn2Event = () => {
     DELETE(`/oauth/user/${user.no}`, {})
@@ -44,14 +43,8 @@ const Info = () => {
   const imageChange = () => {
     const file = fileRef.current.files[0];
     const reader = new FileReader();
-    reader.onloadend = () => {
-      setImage(reader.result)
-    };
+    reader.onloadend = () => setImage(reader.result);
     reader.readAsDataURL(file);
-  }
-  const getFile = (fileNo) => {
-    if(fileNo == null) return Vite
-    return baseUrl + "/oauth/file/u/" + fileNo
   }
   const changeEvent = (e) => {
     const {name, value} = e.target;
@@ -62,7 +55,6 @@ const Info = () => {
       GET("/oauth/user")
       .then(res => {
         if(res.status) {
-          console.log(res.result)
           setUser(res.result)
           setImage(getFile(res.result.fileNo))
         } else {

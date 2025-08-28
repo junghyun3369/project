@@ -4,12 +4,15 @@ import { POST } from '@utils/Network.js'
 
 const Login = () => {
   const { modalEvent, closeEvent, isValidEmail } = useRoot()
+  const [ accept, setAccept ] = useState(false)
   const emailRef = useRef(null)
   const submitEvent = () => {
     if(isValidEmail(emailRef.current.value)) {
+      setAccept(true)
       POST("/oauth/user/email", {email : emailRef.current.value, type : 2})
       .then(res => {
         if(res.status) {
+          setAccept(false)
           modalEvent("Email")
         } else {
           alert(res.message)
@@ -36,7 +39,7 @@ const Login = () => {
             <label htmlFor="email">이메일</label>
             <input type="email" id="email" name="email" className="input" ref={emailRef} placeholder="id@example.com" required />
           </div>
-          <button className="btn" type="button" onClick={submitEvent}>이메일 인증</button>
+          <button className="btn" type="button" onClick={submitEvent} disabled={accept}>이메일 인증</button>
           <p className="footer">계정이 없으신가요? <span style={{color: 'red', cursor: 'pointer'}} onClick={()=>modalEvent("SignUp")}>회원가입</span></p>
         </form>
       </section>

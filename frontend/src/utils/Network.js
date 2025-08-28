@@ -83,3 +83,19 @@ export const DELETE = async (url, data) => {
     return {status: false}
   }
 }
+
+export const FastAPI = async (method, url, data) => {
+  try {
+    let conf = {
+      baseURL: "http://localhost:8000",
+      method: method,
+      url: url,
+      data
+    }
+    const response = await axios(conf)
+    return response.data
+  } catch (err) {
+    console.error(err)
+    return {status: false}
+  }
+}

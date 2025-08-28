@@ -11,7 +11,8 @@ class Test(BaseModel):
   code: int
 
 origins = [
-    "http://localhost:5173"
+    "http://localhost:5173",
+    "http://192.168.0.37:5173",
 ]
 
 testCode = 123456
@@ -37,32 +38,118 @@ app.add_middleware(
 def home():
   return {"status": 1}
 
-@app.post("/user")
-def signup(user: User):
-  print(f"signup : {user.email}")
+@app.post("/board")
+def signup():
   conn = mariadb.connect(**conn_params)
   cur = conn.cursor()
-  sql = f"SELECT email FROM user WHERE email = '{user.email}'"
+  sql = '''
+        SELECT b.no, b.prompt, b.fileNo AS boardFileNo, u.`name`, u.no, u.fileNo AS userFileNo,
+            b.modDate
+        FROM pixel.`board` AS b 
+      INNER JOIN auth.`user` AS u
+          ON (b.regUserNo = u.no AND u.useYn = 'Y') 
+      WHERE b.useYn = 'Y'
+      ORDER BY 1 desc
+      LIMIT 5
+  '''
   cur.execute(sql)
-  result = cur.fetchone()
+  columns = [desc[0] for desc in cur.description]
+  rows = cur.fetchall()
+  result = [dict(zip(columns, row)) for row in rows]
   cur.close()
   conn.close()
   if result:
     return {
       "status": True,
-      "code" : testCode
+      "result" : result
     }
   else :
     return {
       "status": False
     }
-  
-@app.post("/code")
-def code(test : Test):
-  print(f"code : {test.code}, {testCode}")
-  if testCode == test.code :  
+    
+@app.post("/board/{no}")
+def signup(no: int):
+  conn = mariadb.connect(**conn_params)
+  cur = conn.cursor()
+  sql = f'''
+        SELECT b.no, b.prompt, b.fileNo AS boardFileNo, u.`name`, u.no, u.fileNo AS userFileNo,
+            b.modDate
+        FROM pixel.`board` AS b 
+      INNER JOIN auth.`user` AS u
+          ON (b.regUserNo = u.no AND u.useYn = 'Y') 
+      WHERE b.useYn = 'Y'
+        AND b.regUserNo = {no}
+      ORDER BY 1 desc
+  '''
+  cur.execute(sql)
+  columns = [desc[0] for desc in cur.description]
+  rows = cur.fetchall()
+  result = [dict(zip(columns, row)) for row in rows]
+  cur.close()
+  conn.close()
+  if result:
     return {
-      "status": True
+      "status": True,
+      "result" : result
+    }
+  else :
+    return {
+      "status": False
+    }
+    
+@app.post("/subsribe/{no}")
+def signup(no: int):
+  conn = mariadb.connect(**conn_params)
+  cur = conn.cursor()
+  sql = f'''
+        SELECT u.no, u.name, u.fileNo
+          FROM pixel.`subscribe` AS s
+        INNER JOIN auth.`user` AS u
+            ON (s.userNo = u.no AND u.useYn = 'Y')
+          WHERE s.useYn = 'Y'
+          AND s.regUserNo = {no}
+        ORDER BY 1 DESC
+  '''
+  cur.execute(sql)
+  columns = [desc[0] for desc in cur.description]
+  rows = cur.fetchall()
+  result = [dict(zip(columns, row)) for row in rows]
+  cur.close()
+  conn.close()
+  if result:
+    return {
+      "status": True,
+      "result" : result
+    }
+  else :
+    return {
+      "status": False
+    }
+    
+@app.post("/info/{no}")
+def signup(no: int):
+  conn = mariadb.connect(**conn_params)
+  cur = conn.cursor()
+  sql = f'''
+        SELECT u.no, u.name, u.fileNo, COUNT(s.no) AS subscribeCount
+          FROM auth.`user` u
+          LEFT JOIN pixel.`subscribe` s
+            ON s.regUserNo = u.no AND s.useYn = 'Y'
+        WHERE u.useYn = 'Y'
+          AND u.no = {no}
+        GROUP BY u.no, u.name, u.fileNo
+  '''
+  cur.execute(sql)
+  columns = [desc[0] for desc in cur.description]
+  row = cur.fetchone()
+  result = dict(zip(columns, row)) if row else None
+  cur.close()
+  conn.close()
+  if result:
+    return {
+      "status": True,
+      "result" : result
     }
   else :
     return {
