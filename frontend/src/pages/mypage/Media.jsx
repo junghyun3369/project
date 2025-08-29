@@ -14,7 +14,7 @@ const Media = () => {
         if(res.status) {
           setList(res.result)
         } else {
-          alert("오류")
+          // alert("오류")
         }
       })
       // const arr = {fileNo: null}

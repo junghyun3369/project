@@ -8,7 +8,6 @@ import Login from '@pages/user/Login.jsx'
 import SignUp from '@pages/user/SignUp.jsx'
 import Email from '@pages/user/Email.jsx'
 import MyPage from '@pages/mypage/MyPage.jsx'
-import Like from '@pages/mypage/Like.jsx'
 import { useRoot } from '@hooks/RootProvider.jsx'
 import { BrowserRouter, Routes, Route } from "react-router"
 

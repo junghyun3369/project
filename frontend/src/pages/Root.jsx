@@ -41,8 +41,7 @@ const Root = () => {
       </header>
 
       <section className="gallery">
-        { /* 이미지 반복 */ }
-        {
+        { /* 이미지 반복 */
           images?.map((row, index) => {
             return (
               <div className="gallery-item" key={index} onClick={()=>setIsFreeView(true)}>

@@ -1,8 +1,11 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 import mariadb
 import os
 from pydantic import BaseModel
+import json
+from urllib import request
+import asyncio
 
 class User(BaseModel):
   email: str
@@ -15,7 +18,7 @@ origins = [
     "http://192.168.0.37:5173",
 ]
 
-testCode = 123456
+COMFYUI_URL = "192.168.0.249:9000"
 
 conn_params = {
   "user" : os.getenv('MARIADB_USER'),
@@ -155,3 +158,54 @@ def signup(no: int):
     return {
       "status": False
     }
+
+@app.post("/gen")
+async def comfyUI(p : str):
+  try:  
+    # p = "a majestic lion with a crown of stars, photorealistic"
+    with open("flow/1.json", "r", encoding="utf-8") as f:
+      workflow = json.load(f)
+    workflow["6"]["inputs"]["text"] = p
+    
+    prompt_id = queue_prompt(workflow)
+    result = await check_progress(prompt_id)
+    
+    final_image_url = None
+    for node_id, node_output in result['outputs'].items():
+      if 'images' in node_output:
+        for image in node_output['images']:
+          final_image_url = f"http://{COMFYUI_URL}/api/view?filename={image['filename']}&type=output&subfolder="
+    
+    if final_image_url:
+      return {"status": True, "image": final_image_url}
+    else:
+      return {"status": False, "image": None}
+  except HTTPException as e:
+    raise e
+  except Exception as e:
+    raise HTTPException(status_code=500, detail=str(e))
+
+def queue_prompt(prompt_workflow):
+  p = {"prompt": prompt_workflow}
+  data = json.dumps(p).encode('utf-8')
+  req = request.Request(f"http://{COMFYUI_URL}/prompt", data=data)
+  try:
+    res = request.urlopen(req)
+    if res.code != 200:
+      raise Exception(f"Error: {res.code} {res.reason}")
+    return json.loads(res.read().decode('utf-8'))['prompt_id']
+  except Exception as e:
+    raise HTTPException(status_code=500, detail=str(e))
+
+async def check_progress(prompt_id: str):
+  while True:
+    try:
+      req = request.Request(f"http://{COMFYUI_URL}/history/{prompt_id}")
+      res = request.urlopen(req)
+      if res.code == 200:
+        history = json.loads(res.read().decode('utf-8'))
+        if prompt_id in history:
+          return history[prompt_id]
+    except Exception as e:
+      print(f"Error checking progress: {str(e)}")
+    await asyncio.sleep(1)

@@ -12,7 +12,7 @@ const Aside = () => {
   return (
     <aside className="sidebar">
       <div className="sidebar-header">
-        <i className="fas fa-rocket logo-icon"></i>
+        {/* <i className="fas fa-rocket logo-icon"></i> */}
         <h1 onClick={()=>navigate('/')} style={style}>AI Gen</h1>
       </div>
       <nav className="sidebar-nav">
