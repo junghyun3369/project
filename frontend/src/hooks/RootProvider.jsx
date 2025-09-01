@@ -13,6 +13,7 @@ const RootProvider = ({children}) => {
   const [isEmail, setIsEmail] = useState(false)
   const [access, setAccess] = useState(false)
   const [isFreeView, setIsFreeView] = useState(false)
+  const [board, setBoard] = useState({})
   const [cookies, setCookie, removeCookie] = useCookies(['ck']);
 
   const modalEvent = (target) => {
@@ -61,10 +62,21 @@ const RootProvider = ({children}) => {
     location.reload();
   }
 
-  const baseUrl = import.meta.env.VITE_APP_GATEWAY_URL || 'http://localhost:7000';
+  const baseUrl1 = import.meta.env.VITE_APP_GATEWAY_URL || 'http://localhost:7000';
   const getFile = (fileNo) => {
     if(fileNo == null) return None
-    return baseUrl + "/oauth/file/u/" + fileNo
+    return baseUrl1 + "/oauth/file/u/" + fileNo
+  }
+
+  const baseUrl2 = import.meta.env.VITE_APP_FASTAPI_URL || 'http://localhost:8000';
+  const getBoardFile = (path) => {
+    if(path == null) return None
+    return baseUrl2 + "/" + path
+  }
+
+  const targetImage = (row) => {
+    setBoard(row)
+    setIsFreeView(true)
   }
 
   const getUserNo = () => {
@@ -81,7 +93,7 @@ const RootProvider = ({children}) => {
   }, [])
 
   return (
-    <RootContext.Provider value={{ access, setAccess, isUser, isLogin, isSignUp, isEmail, modalEvent, closeEvent, isValidEmail, setStorage, getStorage, removeStorage, isStorage, getFile, getUserNo, isFreeView, setIsFreeView }}>
+    <RootContext.Provider value={{ access, setAccess, isUser, isLogin, isSignUp, isEmail, modalEvent, closeEvent, isValidEmail, setStorage, getStorage, removeStorage, isStorage, getFile, getBoardFile, getUserNo, isFreeView, setIsFreeView, targetImage, board }}>
       {children}
     </RootContext.Provider>
   )

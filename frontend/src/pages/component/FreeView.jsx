@@ -1,34 +1,105 @@
 import { useState, useEffect } from 'react'
 import { useRoot } from '@hooks/RootProvider.jsx'
+import { FastAPI } from '@utils/Network.js'
 
 const FreeView = () => {
-  const { setIsFreeView } = useRoot()
+  const { setIsFreeView, getBoardFile, getUserNo, getFile, board } = useRoot()
+  const [follow, setFollow] = useState(false);
+  const [like, setLike] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const [error, setError] = useState(null);
+
+  const fallbackCopyTextToClipboard = (text) => {
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    textarea.style.position = 'fixed';
+    textarea.style.top = '-9999px';
+    document.body.appendChild(textarea);
+    textarea.focus();
+    textarea.select();
+
+    let successful = false;
+    try {
+      successful = document.execCommand('copy');
+    } catch (err) {
+      successful = false;
+    }
+
+    document.body.removeChild(textarea);
+    return successful;
+  };
+
+  const handleCopy = async () => {
+    if (navigator.clipboard && window.isSecureContext) {
+      try {
+        await navigator.clipboard.writeText(text);
+        setCopied(true);
+        setError(null);
+        setTimeout(() => setCopied(false), 2000);
+      } catch (err) {
+        setError('클립보드 복사에 실패했습니다.');
+      }
+    } else {
+      const success = fallbackCopyTextToClipboard(board.prompt);
+      if (success) {
+        setCopied(true);
+        setError(null);
+        setTimeout(() => setCopied(false), 2000);
+      } else {
+        setError('클립보드 복사에 실패했습니다.');
+      }
+    }
+  }
+
+  const handleOpenNewTab = () => {
+    // window.open(getBoardFile(board.attachPath), "_blank", board.prompt);
+    const a = document.createElement('a');
+    a.href = getBoardFile(board.attachPath);
+    a.target = '_blank';
+    a.rel = board.prompt;
+    a.click();
+  };
+
+  const likeEvent = () => {
+    FastAPI("POST", "/like", {boardNo: board.no, userNo: getUserNo()})
+    .then(res => {
+      console.log(res)
+    })
+  }
+
+  useEffect(() => {
+    setFollow(!(getUserNo() === board.userNo))
+
+    // 구독, 좋아요 확인 처리 추가 
+    setLike(!(getUserNo() === board.userNo))
+  }, [])
+
   return (
     <div id="image-modal" className="modal-overlay">
       <div className="overlay" onClick={()=>setIsFreeView(false)}></div>
       <div className="modal-content">
         <header className="modal-header">
           <div className="user-info">
-            <img src="https://picsum.photos/seed/user1/50/50" alt="User avatar" className="avatar" />
-            <span className="username">ArtisticAI</span>
+            <img src={getFile(board.userFileNo)} alt="User avatar" className="avatar" />
+            <span className="username">{board.name}</span>
           </div>
           <div className="header-buttons">
-            <button className="follow-btn">구독</button>
-            <button className="close-button" >&times;</button>
+            { follow && <button className="follow-btn">구독</button> }
+            <button className="close-button" onClick={()=>setIsFreeView(false)}>&times;</button>
           </div>
         </header>
 
         <section className="prompt-section">
-          <p className="prompt-text">a majestic lion with a crown of stars, photorealistic, cinematic lighting, 8k</p>
-          <button className="copy-btn">
+          <p className="prompt-text">{board.prompt}</p>
+          <button className="copy-btn" onClick={handleCopy}>
             <i className="fa-regular fa-copy"></i> 프롬프트 복사
           </button>
         </section>
 
         <div className="modal-main-body">
           <div className="image-wrapper">
-              <img src="http://192.168.0.253:7000/oauth/file/u/3" alt="Enlarged AI art" className="modal-image" />
-              <button className="view-original-btn">
+              <img src={getBoardFile(board.attachPath)} alt="Enlarged AI art" className="modal-image" />
+              <button className="view-original-btn" onClick={handleOpenNewTab}>
                   <i className="fa-solid fa-expand"></i> 원본 사이즈
               </button>
           </div>
@@ -72,9 +143,11 @@ const FreeView = () => {
 
         <footer className="modal-footer">
           <div className="actions-bar">
-            <button className="like-btn">
+            { like && 
+            <button className="like-btn" onClick={likeEvent}>
               <i className="fa-regular fa-heart"></i>
             </button>
+            }
             <button className="comment-btn">
               <i className="fa-regular fa-comment"></i>
             </button>

@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { FastAPI } from '@utils/Network.js'
 
 const Media = () => {
-  const { isStorage, getFile, getUserNo, setIsFreeView } = useRoot()
+  const { isStorage, getBoardFile, getUserNo, targetImage } = useRoot()
   const navigate = useNavigate();
   const [list, setList] = useState([])
   useEffect(() => {
@@ -27,8 +27,8 @@ const Media = () => {
     <div className="grid">
       {list?.map((row, index) => {
         return (
-          <div className="grid-card" key={index} onClick={()=>setIsFreeView(true)}>
-            <img src={getFile(row.boardFileNo)} alt="" />
+          <div className="grid-card" key={index} onClick={()=>targetImage(row)}>
+            <img src={getBoardFile(row.attachPath)} alt="" />
           </div>
         )
       })}
