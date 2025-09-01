@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react'
 import { useRoot } from '@hooks/RootProvider.jsx'
-import { GET } from '@utils/Network.js'
 import { useNavigate, Routes, Route } from "react-router-dom";
 import NonePage from '@pages/component/NonePage.jsx'
 import FreeView from '@pages/component/FreeView.jsx'
@@ -9,12 +8,13 @@ import Like from '@pages/mypage/Like.jsx'
 import Subsribe from '@pages/mypage/Subsribe.jsx'
 import '@styles/mypage/mypage.css'
 import { FastAPI } from '@utils/Network.js'
+import None from '@assets/none.png'
 
 const MyPage = () => {
   const { isStorage, getFile, getUserNo, isFreeView, setIsFreeView } = useRoot()
   const navigate = useNavigate();
   const [user, setUser] = useState({ email: '', name: '' })
-  const [image, setImage] = useState(null);
+  const [image, setImage] = useState(None);
   const [page, setPage] = useState("/")
   const [subsribe, setSubsribe] = useState(false)
   

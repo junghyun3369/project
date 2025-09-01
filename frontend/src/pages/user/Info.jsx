@@ -1,12 +1,13 @@
 import { useState, useEffect, useRef } from 'react'
 import { useRoot } from '@hooks/RootProvider.jsx'
 import { GET, DELETE, FileUpload } from '@utils/Network.js'
+import None from '@assets/none.png'
 
 const Info = () => {
   const { closeEvent, removeStorage, isStorage, getFile } = useRoot()
   const [isEdit, setIsEdit] = useState(true)
   const [user, setUser] = useState({ email: '', name: '' })
-  const [image, setImage] = useState(null);
+  const [image, setImage] = useState(None);
   const fileRef = useRef(null);
   const btn1Event = () => {
     if(!isEdit) {

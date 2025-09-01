@@ -6,6 +6,9 @@ from pydantic import BaseModel
 import json
 from urllib import request
 import asyncio
+from dotenv import load_dotenv
+
+load_dotenv()
 
 class User(BaseModel):
   email: str
@@ -13,12 +16,8 @@ class User(BaseModel):
 class Test(BaseModel):
   code: int
 
-origins = [
-    "http://localhost:5173",
-    "http://192.168.0.37:5173",
-]
-
-COMFYUI_URL = "192.168.0.249:9000"
+origins = [os.getenv('FRONT_HOST1'),os.getenv('FRONT_HOST2')]
+COMFYUI_URL = os.getenv('COMFYUI_URL')
 
 conn_params = {
   "user" : os.getenv('MARIADB_USER'),

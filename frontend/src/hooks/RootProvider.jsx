@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, useEffect } from "react"
 import { useCookies } from 'react-cookie';
 import { decode, encode } from '@utils/Common.js'
-import Vite from '@assets/vite.svg'
+import None from '@assets/none.png'
 import { jwtDecode } from 'jwt-decode';
 
 export const RootContext = createContext()
@@ -63,7 +63,7 @@ const RootProvider = ({children}) => {
 
   const baseUrl = import.meta.env.VITE_APP_GATEWAY_URL || 'http://localhost:7000';
   const getFile = (fileNo) => {
-    if(fileNo == null) return Vite
+    if(fileNo == null) return None
     return baseUrl + "/oauth/file/u/" + fileNo
   }
 
