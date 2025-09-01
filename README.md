@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Pixel ✨
 
 <img width="1717" height="890" alt="image" src="./images/pixel.webp" />
@@ -29,3 +30,6 @@
 |:-----:|:--------:|:---------:|
 | [<img src="https://github.com/Yangjeongwon1133.png" width="80" alt="양정원"/>](https://github.com/Yangjeongwon1133) | [<img src="https://github.com/yoonjin0130.png" width="80" alt="이윤진"/>](https://github.com/yoonjin0130) | [<img src="https://github.com/junghyun3369.png" width="80" alt="이정현"/>](https://github.com/junghyun3369)  |
 | [양정원](https://github.com/Yangjeongwon1133) | [이윤진](https://github.com/yoonjin0130) | [이정현](https://github.com/junghyun3369) |
+=======
+# project
+>>>>>>> 0c15f6d805155e3dce2063196fffc8272041bcd4
